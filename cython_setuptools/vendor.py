@@ -100,7 +100,7 @@ distribute C files with your package (the default), and ``False`` if you
 do.
 
 Packages that distribute C files may use the ``CYTHONIZE`` environment
-variable to create or update the C files:
+variable to create or update the C files::
 
     CYTHONIZE=1 python setup.py build_ext --inplace
 
@@ -109,14 +109,18 @@ You can also enable profiling for the Cython modules with the
 
     PROFILE_CYTHON=1 python setup.py build_ext --inplace
 
+Debugging symbols can be added with::
+
+    DEBUG=1 python setup.py build_ext --inplace
+
 """
 import subprocess
 import os
 import os.path as op
+import sys
 
 import setuptools
 
-import sys
 PY3 = sys.version_info[0] == 3
 if PY3:
     import configparser
@@ -136,13 +140,15 @@ def setup(cythonize=True, **kwargs):
     setup_cfg_file = op.join(this_dir, 'setup.cfg')
     cythonize = _str_to_bool(os.environ.get('CYTHONIZE', cythonize))
     profile_cython = _str_to_bool(os.environ.get('PROFILE_CYTHON', False))
+    debug = _str_to_bool(os.environ.get('DEBUG', False))
     if op.exists(setup_cfg_file):
         # Create Cython Extension objects
         with open(setup_cfg_file) as fp:
             parsed_setup_cfg = parse_setup_cfg(fp, cythonize=cythonize)
         cython_ext_modules = create_cython_ext_modules(
             parsed_setup_cfg,
-            profile_cython=profile_cython
+            profile_cython=profile_cython,
+            debug=debug
         )
         ext_modules = kwargs.setdefault('ext_modules', [])
         ext_modules.extend(cython_ext_modules)
@@ -163,12 +169,18 @@ def setup(cythonize=True, **kwargs):
     setuptools.setup(**kwargs)
 
 
-def create_cython_ext_modules(cython_modules, profile_cython=False):
+def create_cython_ext_modules(cython_modules, profile_cython=False,
+                              debug=False):
     """
     Create :class:`~distutils.extension.Extension` objects from
     *cython_modules*.
 
     *cython_modules* must be a dict, as returned by :func:`parse_setup_cfg`.
+
+    If *profile_cython* is true, Cython modules are compiled to support Python
+    proiflers.
+
+    Debug symbols are included if *debug* is true.
     """
     if profile_cython:
         from Cython.Distutils import Extension
@@ -180,7 +192,13 @@ def create_cython_ext_modules(cython_modules, profile_cython=False):
         kwargs = {'name': name}
         kwargs.update(mod_data)
         if profile_cython:
-            kwargs['cython_directives'] = {'profile': True}
+            cython_directives = kwargs.setdefault('cython_directives', {})
+            cython_directives['profile'] = True
+        if debug:
+            for args_name in ('extra_compile_args', 'extra_link_args'):
+                args = kwargs.setdefault(args_name, [])
+                if '-g' not in args:
+                    args.append('-g')
         ext = Extension(**kwargs)
         ret.append(ext)
     return ret
