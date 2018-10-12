@@ -1,0 +1,2 @@
+include sx_setuptools.py
+include cython-setuptools.py
