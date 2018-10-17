@@ -1,119 +1,3 @@
-"""
-Drop-in replacement for :func:`setuptools.setup`, adding Cython niceties.
-
-Cython modules are described in setup.cfg, for example::
-
-    [cython-module: foo.bar]
-    sources = foo.pyx
-              bar.cpp
-    include_dirs = eval(__import__('numpy').get_include())
-                   /usr/include/foo
-    language = c++
-    pkg_config_packages = opencv
-
-You still need to provide a ``setup.py``::
-
-    from cysetuptools import setup
-
-    setup()
-
-The modules sections support the following entries:
-
-sources
-    The list of Cython and C/C++ source files that are compiled to build
-    the module.
-
-libraries
-    A list of libraries to link with the module.
-
-include_dirs
-    A list of directories to find include files. This entry supports
-    python expressions with ``eval()``; in the example above this is used
-    to retrieve the numpy include directory.
-
-library_dirs
-    A list of directories to find libraries.
-
-extra_compile_args
-    Extra arguments passed to the compiler.
-
-extra_link_args
-    Extra arguments passed to the linker.
-
-language
-    Typically "c" or "c++".
-
-pkg_config_packages
-    A list of ``pkg-config`` package names to link with the module.
-
-pkg_config_dirs
-    A list of directories to add to the pkg-config search paths (extends
-    the ``PKG_CONFIG_PATH`` environment variable).
-
-Defaults can also be specified in the ``[cython-defaults]`` section, for
-example::
-
-    [cython-defaults]
-    include_dirs = /usr/include/bar
-
-    [cython-module: foo.one]
-    sources = foo/one.pyx
-
-    [cython-module: foo.two]
-    sources = foo/two.pyx
-    include_dirs = /usr/include/foo
-
-Here, ``foo.one`` and ``foo.two`` both will have ``/usr/include/bar`` in their
-``include_dirs``. List parameters in defaults are extended, so in the example
-above, module ``foo.two`` ``include_dirs`` will be ``['/usr/include/bar',
-'/usr/include/foo']``.
-
-There are two approaches when distributing Cython modules: with or without
-the C files. Both approaches have their advantages and inconvenients:
-
-    * not distributing the C files means they are generated on the fly when
-      compiling the modules. Cython needs to be installed on the system,
-      and it makes your package a bit more future proof, as Cython evolves
-      to support newer Python versions. It also introduces some variance in
-      the builds, as they now depend on the Cython version installed on the
-      system;
-
-    * when you distribute the C files with your package, the modules can be
-      compiled directly with the host compiler, no Cython required. It also
-      makes your tarball heavier, as Cython generates quite verbose code.
-      It might also be good for performance-critical code, when you want to
-      make sure the generated code is optimal, regardless of version of
-      Cython installed on the host system.
-
-In the first case, you can make Cython available to pip for compilation by
-adding it to your ``setup.cfg``::
-
-    [options]
-    install_requires = cython
-
-This way people who just want to install your package won't need to have
-Cython installed in their system/venv.
-
-It is up to you to choose one option or the other. The *cythonize* argument
-controls the default mode of operation: set it to ``True`` if you don't
-distribute C files with your package (the default), and ``False`` if you
-do.
-
-Packages that distribute C files may use the ``CYTHONIZE`` environment
-variable to create or update the C files::
-
-    CYTHONIZE=1 python setup.py build_ext --inplace
-
-You can also enable profiling for the Cython modules with the
-``PROFILE_CYTHON`` environment variable::
-
-    PROFILE_CYTHON=1 python setup.py build_ext --inplace
-
-Debugging symbols can be added with::
-
-    DEBUG=1 python setup.py build_ext --inplace
-
-"""
 import subprocess
 import os
 import os.path as op
@@ -136,6 +20,122 @@ CPP_EXT = '.cpp'
 
 
 def setup(cythonize=True, **kwargs):
+    """
+    Drop-in replacement for :func:`setuptools.setup`, adding Cython niceties.
+
+    Cython modules are described in setup.cfg, for example::
+
+        [cython-module: foo.bar]
+        sources = foo.pyx
+                  bar.cpp
+        include_dirs = eval(__import__('numpy').get_include())
+                       /usr/include/foo
+        language = c++
+        pkg_config_packages = opencv
+
+    You still need to provide a ``setup.py``::
+
+        from cysetuptools import setup
+
+        setup()
+
+    The modules sections support the following entries:
+
+    sources
+        The list of Cython and C/C++ source files that are compiled to build
+        the module.
+
+    libraries
+        A list of libraries to link with the module.
+
+    include_dirs
+        A list of directories to find include files. This entry supports
+        python expressions with ``eval()``; in the example above this is used
+        to retrieve the numpy include directory.
+
+    library_dirs
+        A list of directories to find libraries.
+
+    extra_compile_args
+        Extra arguments passed to the compiler.
+
+    extra_link_args
+        Extra arguments passed to the linker.
+
+    language
+        Typically "c" or "c++".
+
+    pkg_config_packages
+        A list of ``pkg-config`` package names to link with the module.
+
+    pkg_config_dirs
+        A list of directories to add to the pkg-config search paths (extends
+        the ``PKG_CONFIG_PATH`` environment variable).
+
+    Defaults can also be specified in the ``[cython-defaults]`` section, for
+    example::
+
+        [cython-defaults]
+        include_dirs = /usr/include/bar
+
+        [cython-module: foo.one]
+        sources = foo/one.pyx
+
+        [cython-module: foo.two]
+        sources = foo/two.pyx
+        include_dirs = /usr/include/foo
+
+    Here, ``foo.one`` and ``foo.two`` both will have ``/usr/include/bar`` in
+    their ``include_dirs``. List parameters in defaults are extended, so in the
+    example above, module ``foo.two`` ``include_dirs`` will be
+    ``['/usr/include/bar', '/usr/include/foo']``.
+
+    There are two approaches when distributing Cython modules: with or without
+    the C files. Both approaches have their advantages and inconvenients:
+
+        * not distributing the C files means they are generated on the fly when
+          compiling the modules. Cython needs to be installed on the system,
+          and it makes your package a bit more future proof, as Cython evolves
+          to support newer Python versions. It also introduces some variance in
+          the builds, as they now depend on the Cython version installed on the
+          system;
+
+        * when you distribute the C files with your package, the modules can be
+          compiled directly with the host compiler, no Cython required. It also
+          makes your tarball heavier, as Cython generates quite verbose code.
+          It might also be good for performance-critical code, when you want to
+          make sure the generated code is optimal, regardless of version of
+          Cython installed on the host system.
+
+    In the first case, you can make Cython available to pip for compilation by
+    adding it to your ``setup.cfg``::
+
+        [options]
+        install_requires = cython
+
+    This way people who just want to install your package won't need to have
+    Cython installed in their system/venv.
+
+    It is up to you to choose one option or the other. The *cythonize* argument
+    controls the default mode of operation: set it to ``True`` if you don't
+    distribute C files with your package (the default), and ``False`` if you
+    do.
+
+    Packages that distribute C files may use the ``CYTHONIZE`` environment
+    variable to create or update the C files::
+
+        CYTHONIZE=1 python setup.py build_ext --inplace
+
+    You can also enable profiling for the Cython modules with the
+    ``PROFILE_CYTHON`` environment variable::
+
+        PROFILE_CYTHON=1 python setup.py build_ext --inplace
+
+    Debugging symbols can be added with::
+
+        DEBUG=1 python setup.py build_ext --inplace
+
+    """
     this_dir = op.dirname(__file__)
     setup_cfg_file = op.join(this_dir, 'setup.cfg')
     cythonize = _str_to_bool(os.environ.get('CYTHONIZE', cythonize))
@@ -158,9 +158,7 @@ def setup(cythonize=True, **kwargs):
             try:
                 from Cython.Distutils import build_ext
             except ImportError:
-                # Dummy wrapper to avoid Cython import errors during setup
-                def build_ext(*args, **kwargs):
-                    pass
+                from setuptools.command.build_ext import build_ext
         else:
             from setuptools.command.build_ext import build_ext
         cmd_class = kwargs.setdefault('cmdclass', {})
