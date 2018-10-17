@@ -306,10 +306,10 @@ def _run_pkg_config(pkg_names):
 def _expand_sources(config, section, language, cythonize):
     if cythonize:
         ext = CYTHON_EXT
-    elif language == 'c':
-        ext = C_EXT
-    else:
+    elif language == 'c++':
         ext = CPP_EXT
+    else:
+        ext = C_EXT
     sources = _get_config_list(config, section, 'sources')
     return [_replace_cython_ext(s, ext) for s in sources]
 
