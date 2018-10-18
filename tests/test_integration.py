@@ -1,16 +1,20 @@
 import os.path as op
 import shutil
 
+import pytest
+
 
 this_dir = op.dirname(__file__)
 
 
+@pytest.mark.slow
 def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-no-cythonize.py', tmp_dir)
     virtualenv.run('CYTHONIZE=1 pip install -e %s' % pypkg_dir)
     assert virtualenv.run('python -m bar', capture=True) == '2\n'
 
 
+@pytest.mark.slow
 def test_compile_and_run_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-cythonize.py', tmp_dir)
     virtualenv.run('pip install -e %s' % pypkg_dir)
