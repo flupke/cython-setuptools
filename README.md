@@ -1,4 +1,5 @@
 # cython-setuptools
+[![Build Status](https://travis-ci.org/flupke/cython-setuptools.svg?branch=master)](https://travis-ci.org/flupke/cython-setuptools)
 
 Cython setuptools integration.
 
