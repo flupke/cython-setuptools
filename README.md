@@ -1,17 +1,13 @@
 # cython-setuptools
 [![Build Status](https://travis-ci.org/flupke/cython-setuptools.svg?branch=master)](https://travis-ci.org/flupke/cython-setuptools)
 
-Cython setuptools integration.
-
-Allows compiling and distributing Cython modules in your Python projects.
+Easier distribution and development of Cython modules.
 
 Features:
 
 * C/C++ files generated from Cython can be included in the VCS, or not
   (in which case they are generated on the fly from Cython files)
-
 * Cython modules are defined in `setup.cfg`
-
 * Cython can be specified in `install_requires`, `pip` properly installs it
   before compiling Cython modules
 
