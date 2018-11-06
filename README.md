@@ -5,11 +5,11 @@ Easier distribution and development of Cython modules.
 
 Features:
 
-* C/C++ files generated from Cython can be included in the VCS, or not
-  (in which case they are generated on the fly from Cython files)
+* Two distribution models: with C/C++ files included in the package, and
+  without
 * Cython modules are defined in `setup.cfg`
-* Cython can be specified in `install_requires`, `pip` properly installs it
-  before compiling Cython modules
+* Install directly from Cython sources, without installing Cython in the target
+  environment (Cython is only included in `install_requires`)
 
 ## Installation
 
@@ -18,6 +18,12 @@ $ pip install cython-setuptools
 ```
 
 ## Usage
+
+Here is an example Python package using the default distribution model (only
+Cython files are included in the source package).
+
+First install the `cython-setuptools` vendor module in the package, next to
+`setup.py`.
 
 ```shell
 $ cd your-python-project/
@@ -32,9 +38,25 @@ from cysetuptools import setup
 setup()
 ```
 
-And define your Cython modules in `setup.cfg`:
+Note that we keep the default `cythonize=True` argument of `setup()` here,
+meaning that C files are compiled from Cython files automatically.
+`setup(cythonize=False)` would mean we would need to distribute the C/C++ files
+compiled from Cython in the source package.
+
+Define your Cython modules in `setup.cfg`.
 
 ```ini
+[metadata]
+name = your-python-project
+version = 1.0
+
+[options]
+packages = find:
+install_requires = cython
+
+[options.extras_require]
+dev = cython
+
 [cython-defaults]
 include_dirs = include/
 
@@ -50,4 +72,12 @@ Then your Cython modules can be compiled and tested in-place with:
 
 ```shell
 $ python setup.py build_ext --inplace
+```
+
+This automatically compile outdated Cython files. If `setup(cythonize=False)`
+is used, you have to specifically tell the setup to recompile outdated Cython
+files:
+
+```shell
+$ CYTHONIZE=1 python setup.py build_ext --inplace
 ```
