@@ -54,7 +54,8 @@ def setup(cythonize=True, **kwargs):
         to retrieve the numpy include directory.
 
     library_dirs
-        A list of directories to find libraries.
+        A list of directories to find libraries. This entry supports
+        python expressions with ``eval()`` like ``include_dirs``.
 
     extra_compile_args
         Extra arguments passed to the compiler.
@@ -249,6 +250,7 @@ def _expand_one_cython_module(config, section, cythonize, pkg_config,
     include_dirs = _eval_strings(include_dirs)
     include_dirs = _make_paths_absolute(include_dirs, base_dir)
     library_dirs = _get_config_list(config, section, 'library_dirs')
+    library_dirs = _eval_strings(library_dirs)
     library_dirs = _make_paths_absolute(library_dirs, base_dir)
     libraries = _get_config_list(config, section, 'libraries')
     module['include_dirs'] = include_dirs + pc_include_dirs
