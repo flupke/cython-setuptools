@@ -2,6 +2,7 @@ import subprocess
 import os
 import os.path as op
 import sys
+import shlex
 
 import setuptools
 
@@ -236,16 +237,19 @@ def _expand_cython_modules(config, cythonize, pkg_config, base_dir):
 
 def _expand_one_cython_module(config, section, cythonize, pkg_config,
                               base_dir):
+    pc_extra_compile_args, pc_extra_link_args = \
+        _expand_pkg_config_pkgs(config, section, pkg_config)
+
     module = {}
     module['language'] = _get_config_opt(config, section, 'language', None)
     module['extra_compile_args'] = \
-        _get_config_list(config, section, 'extra_compile_args')
+        _get_config_list(config, section, 'extra_compile_args') + \
+        pc_extra_compile_args
     module['extra_link_args'] = \
-        _get_config_list(config, section, 'extra_link_args')
+        _get_config_list(config, section, 'extra_link_args') + \
+        pc_extra_link_args
     module['sources'] = _expand_sources(config, section, module['language'],
                                         cythonize)
-    pc_include_dirs, pc_library_dirs, pc_libraries = \
-        _expand_pkg_config_pkgs(config, section, pkg_config)
     include_dirs = _get_config_list(config, section, 'include_dirs')
     include_dirs = _eval_strings(include_dirs)
     include_dirs = _make_paths_absolute(include_dirs, base_dir)
@@ -253,9 +257,9 @@ def _expand_one_cython_module(config, section, cythonize, pkg_config,
     library_dirs = _eval_strings(library_dirs)
     library_dirs = _make_paths_absolute(library_dirs, base_dir)
     libraries = _get_config_list(config, section, 'libraries')
-    module['include_dirs'] = include_dirs + pc_include_dirs
-    module['library_dirs'] = library_dirs + pc_library_dirs
-    module['libraries'] = libraries + pc_libraries
+    module['include_dirs'] = include_dirs
+    module['library_dirs'] = library_dirs
+    module['libraries'] = libraries
     return module
 
 
@@ -277,30 +281,26 @@ def _eval_strings(values):
 def _expand_pkg_config_pkgs(config, section, pkg_config):
     pkg_names = _get_config_list(config, section, 'pkg_config_packages')
     if not pkg_names:
-        return [], [], []
+        return [], []
 
-    # update PKG_CONFIG_PATH
     original_pkg_config_path = os.environ.get('PKG_CONFIG_PATH', '')
     pkg_config_path = original_pkg_config_path.split(":")
     pkg_config_path.extend(_get_config_list(config, section,
                                             'pkg_config_dirs'))
-    os.environ['PKG_CONFIG_PATH'] = ":".join(pkg_config_path)
+    env = os.environ.copy()
+    env['PKG_CONFIG_PATH'] = ":".join(pkg_config_path)
 
-    pkg_config_output = pkg_config(pkg_names)
-    flags = pkg_config_output.split()
-    include_dirs = [f[2:] for f in flags if f.startswith('-I')]
-    library_dirs = [f[2:] for f in flags if f.startswith('-L')]
-    libraries = [f[2:] for f in flags if f.startswith('-l')]
+    extra_compile_args = pkg_config(pkg_names, '--cflags', env)
+    extra_link_args = pkg_config(pkg_names, '--libs', env)
+    extra_compile_args = shlex.split(extra_compile_args)
+    extra_link_args = shlex.split(extra_link_args)
 
-    # restore original PKG_CONFIG_PATH
-    os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path
-
-    return include_dirs, library_dirs, libraries
+    return extra_compile_args, extra_link_args
 
 
-def _run_pkg_config(pkg_names):
-    return subprocess.check_output(['pkg-config', '--libs',
-                                    '--cflags'] + pkg_names)
+def _run_pkg_config(pkg_names, command, env):
+    return subprocess.check_output(['pkg-config', command] + pkg_names,
+                                   env=env)
 
 
 def _expand_sources(config, section, language, cythonize):

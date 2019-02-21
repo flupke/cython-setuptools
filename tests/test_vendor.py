@@ -5,9 +5,12 @@ from cython_setuptools import vendor
 
 def test_parse_all_module_opts():
 
-    def dummy_pkg_config(pkg_names):
+    def dummy_pkg_config(pkg_names, command, env):
         assert pkg_names == ['dummy']
-        return '-Ipkg-config-include-dir -Lpkg-config-lib-dir -lpkg-config-lib'
+        if command == '--cflags':
+            return '-Ifoo'
+        elif command == '--libs':
+            return '-L"/sp ace/bar" -lbaz'
 
     fp = StringIO('''
 [cython-module: foo.bar]
@@ -27,15 +30,14 @@ pkg_config_libraries = bar
     assert parsed == {
         'foo.bar': {
             'sources': ['foo.cpp', 'bar.cpp'],
-            'libraries': ['foo', 'pkg-config-lib'],
+            'libraries': ['foo'],
             'include_dirs': [
                 '/usr/include/bar',
                 '/usr/include/foo',
-                'pkg-config-include-dir',
             ],
-            'library_dirs': ['/usr/lib/foo', 'pkg-config-lib-dir'],
-            'extra_compile_args': ['-g'],
-            'extra_link_args': ['-v'],
+            'library_dirs': ['/usr/lib/foo'],
+            'extra_compile_args': ['-g', '-Ifoo'],
+            'extra_link_args': ['-v', '-L/sp ace/bar', '-lbaz'],
             'language': 'c++',
         },
     }
