@@ -24,7 +24,7 @@ extra_compile_args = -g
 extra_link_args = -v
 language = c++
 pkg_config_packages = dummy
-pkg_config_libraries = bar
+tags = bar foo
 ''')
     parsed = vendor.parse_setup_cfg(fp, pkg_config=dummy_pkg_config)
     assert parsed == {
@@ -39,6 +39,7 @@ pkg_config_libraries = bar
             'extra_compile_args': ['-g', '-Ifoo'],
             'extra_link_args': ['-v', '-L/sp ace/bar', '-lbaz'],
             'language': 'c++',
+            'tags': 'bar foo',
         },
     }
 
