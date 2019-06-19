@@ -260,7 +260,12 @@ def _expand_one_cython_module(config, section, cythonize, pkg_config,
     module['include_dirs'] = include_dirs
     module['library_dirs'] = library_dirs
     module['libraries'] = libraries
-    for key, value in config.items(section):
+    all_conf_items = config.items(section)
+    try:
+        all_conf_items += config.items(DEFAULTS_SECTION)
+    except configparser.NoSectionError:
+        pass
+    for key, value in all_conf_items:
         if key != 'pkg_config_packages' and key not in module:
             module[key] = value
     return module

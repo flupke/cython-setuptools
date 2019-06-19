@@ -49,9 +49,11 @@ def test_parse_defaults():
 [cython-defaults]
 language = c++
 include_dirs = base
+tags = bazz
 
 [cython-module: one]
 include_dirs = one''')
     parsed = vendor.parse_setup_cfg(fp)
     assert parsed['one']['include_dirs'] == ['base', 'one']
     assert parsed['one']['language'] == 'c++'
+    assert parsed['one']['tags'] == 'bazz'
