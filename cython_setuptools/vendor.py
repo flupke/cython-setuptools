@@ -308,7 +308,7 @@ def _expand_pkg_config_pkgs(config, section, pkg_config):
 
 def _run_pkg_config(pkg_names, command, env):
     return subprocess.check_output(['pkg-config', command] + pkg_names,
-                                   env=env)
+                                   env=env).decode('utf8')
 
 
 def _expand_sources(config, section, language, cythonize):
