@@ -152,19 +152,17 @@ def setup(cythonize=True, **kwargs):
             profile_cython=profile_cython,
             debug=debug
         )
-        ext_modules = kwargs.setdefault('ext_modules', [])
-        ext_modules.extend(cython_ext_modules)
 
-        # Use Cython's build ext if we're cythonizing
         if cythonize:
             try:
-                from Cython.Distutils import build_ext
+                from Cython.Build import cythonize
             except ImportError:
-                from setuptools.command.build_ext import build_ext
-        else:
-            from setuptools.command.build_ext import build_ext
-        cmd_class = kwargs.setdefault('cmdclass', {})
-        cmd_class.setdefault('build_ext', build_ext)
+                pass
+            else:
+                cython_ext_modules = cythonize(cython_ext_modules)
+
+        ext_modules = kwargs.setdefault('ext_modules', [])
+        ext_modules.extend(cython_ext_modules)
 
     setuptools.setup(**kwargs)
 
