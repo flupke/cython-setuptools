@@ -3,6 +3,7 @@ import os
 import os.path as op
 import sys
 import shlex
+import argparse
 
 import setuptools
 
@@ -222,6 +223,37 @@ def parse_setup_cfg(fp, cythonize=False, pkg_config=None, base_dir=''):
     return _expand_cython_modules(config, cythonize, pkg_config, base_dir)
 
 
+class _StoreOrderedArgs(argparse.Action):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if 'ordered_args' not in namespace:
+            setattr(namespace, 'ordered_args', [])
+        namespace.ordered_args.append((self.dest, values))
+
+
+def extract_args(args_str, args):
+    """
+    Extract *args* from arguments string *args_str*.
+
+    Return a *(extracted_args, remaining_args_str)* tuple, where
+    *extracted_args* is a dict containing the extracted arguments, and
+    *remaining_args_str* a string containing the remaining arguments.
+    """
+    parser = argparse.ArgumentParser()
+    for arg in args:
+        parser.add_argument(arg, action=_StoreOrderedArgs)
+    args_list = shlex.split(args_str)
+    try:
+        args_ns, other_args = parser.parse_known_args(args_list)
+    except SystemExit:
+        raise Exception('args parsing failed')
+    extracted_args = {}
+    for arg_name, value in args_ns.ordered_args:
+        arg_values = extracted_args.setdefault(arg_name, [])
+        arg_values.append(value)
+    return extracted_args, ' '.join(other_args)
+
+
 def _expand_cython_modules(config, cythonize, pkg_config, base_dir):
     ret = {}
     for section in config.sections():
@@ -235,8 +267,11 @@ def _expand_cython_modules(config, cythonize, pkg_config, base_dir):
 
 def _expand_one_cython_module(config, section, cythonize, pkg_config,
                               base_dir):
-    pc_extra_compile_args, pc_extra_link_args = \
-        _expand_pkg_config_pkgs(config, section, pkg_config)
+    (pc_include_dirs,
+     pc_extra_compile_args,
+     pc_library_dirs,
+     pc_libraries,
+     pc_extra_link_args) = _expand_pkg_config_pkgs(config, section, pkg_config)
 
     module = {}
     module['language'] = _get_config_opt(config, section, 'language', None)
@@ -249,15 +284,17 @@ def _expand_one_cython_module(config, section, cythonize, pkg_config,
     module['sources'] = _expand_sources(config, section, module['language'],
                                         cythonize)
     include_dirs = _get_config_list(config, section, 'include_dirs')
+    include_dirs += pc_include_dirs
     include_dirs = _eval_strings(include_dirs)
     include_dirs = _make_paths_absolute(include_dirs, base_dir)
     library_dirs = _get_config_list(config, section, 'library_dirs')
+    library_dirs += pc_library_dirs
     library_dirs = _eval_strings(library_dirs)
     library_dirs = _make_paths_absolute(library_dirs, base_dir)
     libraries = _get_config_list(config, section, 'libraries')
     module['include_dirs'] = include_dirs
     module['library_dirs'] = library_dirs
-    module['libraries'] = libraries
+    module['libraries'] = libraries + pc_libraries
     all_conf_items = config.items(section)
     try:
         all_conf_items += config.items(DEFAULTS_SECTION)
@@ -287,7 +324,7 @@ def _eval_strings(values):
 def _expand_pkg_config_pkgs(config, section, pkg_config):
     pkg_names = _get_config_list(config, section, 'pkg_config_packages')
     if not pkg_names:
-        return [], []
+        return [], [], [], [], []
 
     original_pkg_config_path = os.environ.get('PKG_CONFIG_PATH', '')
     pkg_config_path = original_pkg_config_path.split(":")
@@ -298,10 +335,20 @@ def _expand_pkg_config_pkgs(config, section, pkg_config):
 
     extra_compile_args = pkg_config(pkg_names, '--cflags', env)
     extra_link_args = pkg_config(pkg_names, '--libs', env)
+
+    extracted_args, extra_compile_args = extract_args(extra_compile_args,
+                                                      ['-I'])
+    include_dirs = extracted_args.get('I', [])
+    extracted_args, extra_link_args = extract_args(extra_link_args,
+                                                   ['-L', '-l'])
+    library_dirs = extracted_args.get('L', [])
+    libraries = extracted_args.get('l', [])
+
     extra_compile_args = shlex.split(extra_compile_args)
     extra_link_args = shlex.split(extra_link_args)
 
-    return extra_compile_args, extra_link_args
+    return (include_dirs, extra_compile_args, library_dirs, libraries,
+            extra_link_args)
 
 
 def _run_pkg_config(pkg_names, command, env):

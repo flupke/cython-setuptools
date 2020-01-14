@@ -30,14 +30,15 @@ tags = bar foo
     assert parsed == {
         'foo.bar': {
             'sources': ['foo.cpp', 'bar.cpp'],
-            'libraries': ['foo'],
+            'libraries': ['foo', 'baz'],
             'include_dirs': [
                 '/usr/include/bar',
                 '/usr/include/foo',
+                'foo'
             ],
-            'library_dirs': ['/usr/lib/foo'],
-            'extra_compile_args': ['-g', '-Ifoo'],
-            'extra_link_args': ['-v', '-L/sp ace/bar', '-lbaz'],
+            'library_dirs': ['/usr/lib/foo', '/sp ace/bar'],
+            'extra_compile_args': ['-g'],
+            'extra_link_args': ['-v'],
             'language': 'c++',
             'tags': 'bar foo',
         },
@@ -57,3 +58,12 @@ include_dirs = one''')
     assert parsed['one']['include_dirs'] == ['base', 'one']
     assert parsed['one']['language'] == 'c++'
     assert parsed['one']['tags'] == 'bazz'
+
+
+def test_extract_args():
+    args, rest = vendor.extract_args(
+        '-Ifoo -I bar -L /bar --a=a --b b and --rest',
+        ['-I', '-L', '--a', '--b']
+    )
+    assert args == {'I': ['foo', 'bar'], 'L': ['/bar'], 'a': ['a'], 'b': ['b']}
+    assert rest == 'and --rest'
