@@ -248,7 +248,7 @@ def extract_args(args_str, args):
     except SystemExit:
         raise Exception('args parsing failed')
     extracted_args = {}
-    for arg_name, value in args_ns.ordered_args:
+    for arg_name, value in getattr(args_ns, 'ordered_args', []):
         arg_values = extracted_args.setdefault(arg_name, [])
         arg_values.append(value)
     return extracted_args, ' '.join(other_args)

@@ -67,3 +67,9 @@ def test_extract_args():
     )
     assert args == {'I': ['foo', 'bar'], 'L': ['/bar'], 'a': ['a'], 'b': ['b']}
     assert rest == 'and --rest'
+
+
+def test_extract_missing_args():
+    args, rest = vendor.extract_args('-a a', ['-b'])
+    assert args == {}
+    assert rest == '-a a'
