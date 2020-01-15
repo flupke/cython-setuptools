@@ -1,5 +1,9 @@
 # History
 
+## 0.2.3
+
+- extract_args() handles missing args.
+
 ## 0.2.2
 
 - pkg-config -L, -l and -I flags are extracted and put in modules'
