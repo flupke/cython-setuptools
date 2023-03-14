@@ -174,7 +174,7 @@ def setup(cythonize=True, **kwargs):
 def create_cython_ext_modules(cython_modules, profile_cython=False,
                               debug=False):
     """
-    Create :class:`~distutils.extension.Extension` objects from
+    Create :class:`~setuptools.extension.Extension` objects from
     *cython_modules*.
 
     *cython_modules* must be a dict, as returned by :func:`parse_setup_cfg`.
@@ -187,7 +187,7 @@ def create_cython_ext_modules(cython_modules, profile_cython=False,
     if profile_cython:
         from Cython.Distutils import Extension
     else:
-        from distutils.extension import Extension
+        from setuptools.extension import Extension
 
     ret = []
     for name, mod_data in cython_modules.items():
