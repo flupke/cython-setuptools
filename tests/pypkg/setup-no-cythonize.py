@@ -1,3 +1,3 @@
-from cysetuptools import setup
+from cython_setuptools import setup
 
-setup(cythonize=False)
+setup(__file__, cythonize=False)
