@@ -7,6 +7,12 @@ import argparse
 
 import setuptools
 
+# FIXME
+# distutils is deprecated starting from python3.10
+# but the migration to setuptools is not completed
+# this import will change in the future
+from setuptools._distutils.ccompiler import get_default_compiler
+
 PY3 = sys.version_info[0] == 3
 if PY3:
     import configparser
@@ -67,6 +73,9 @@ def setup(cythonize=True, **kwargs):
 
     language
         Typically "c" or "c++".
+
+    cpp_std
+        Typically "11", "14", "17" or "20".
 
     pkg_config_packages
         A list of ``pkg-config`` package names to link with the module.
@@ -265,6 +274,12 @@ def _expand_cython_modules(config, cythonize, pkg_config, base_dir):
     return ret
 
 
+def _convert_cpp_std(version):
+    if get_default_compiler() == 'msvc':
+        return f'/std:c++{version}'
+    return f'-std=c++{version}'
+
+
 def _expand_one_cython_module(config, section, cythonize, pkg_config,
                               base_dir):
     (pc_include_dirs,
@@ -278,6 +293,10 @@ def _expand_one_cython_module(config, section, cythonize, pkg_config,
     module['extra_compile_args'] = \
         _get_config_list(config, section, 'extra_compile_args') + \
         pc_extra_compile_args
+    if module['language'] == 'c++':
+        cpp_std = _get_config_opt(config, section, 'cpp_std', None)
+        if cpp_std:
+            module['extra_compile_args'].append(_convert_cpp_std(cpp_std))
     module['extra_link_args'] = \
         _get_config_list(config, section, 'extra_link_args') + \
         pc_extra_link_args

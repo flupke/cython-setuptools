@@ -65,6 +65,7 @@ sources = foo.pyx
           bar.cpp
 include_dirs = eval(__import__('numpy').get_include())
 language = c++
+cpp_std = 11
 pkg_config_packages = opencv
 ```
 
