@@ -27,15 +27,14 @@ First install the `cython-setuptools` vendor module in the package, next to
 
 ```shell
 $ cd your-python-project/
-$ cython-setuptools install
 ```
 
-Then use `cython-setuptools`' `setup()` in your `setup.py`:
+Then use `cython_setuptools`' `setup()` in your `setup.py`:
 
 ```python
-from cysetuptools import setup
+from cython_setuptools import setup
 
-setup()
+setup(__file__)
 ```
 
 Note that we keep the default `cythonize=True` argument of `setup()` here,
@@ -65,6 +64,7 @@ sources = foo.pyx
           bar.cpp
 include_dirs = eval(__import__('numpy').get_include())
 language = c++
+cpp_std = 11
 pkg_config_packages = opencv
 ```
 

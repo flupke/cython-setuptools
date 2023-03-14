@@ -1,7 +1,6 @@
 import subprocess
 import os
 import os.path as op
-import sys
 import shlex
 import argparse
 
@@ -21,9 +20,15 @@ C_EXT = '.c'
 CPP_EXT = '.cpp'
 
 
-def setup(cythonize=True, **kwargs):
+def setup(original_setup_file: str, cythonize: bool = True, **kwargs):
     """
     Drop-in replacement for :func:`setuptools.setup`, adding Cython niceties.
+
+    Arguments:
+        original_setup_file (str): it's the "__file__" of the original setup.py
+        cythonize (bool): The *cythonize* argument controls the default mode of operation:
+                          set it to ``True`` if you don't distribute C files with your 
+                          package (the default), and ``False`` if you do.
 
     Cython modules are described in setup.cfg, for example::
 
@@ -142,7 +147,7 @@ def setup(cythonize=True, **kwargs):
         DEBUG=1 python setup.py build_ext --inplace
 
     """
-    this_dir = op.dirname(__file__)
+    this_dir = op.dirname(original_setup_file)
     setup_cfg_file = op.join(this_dir, 'setup.cfg')
     cythonize = _str_to_bool(os.environ.get('CYTHONIZE', cythonize))
     profile_cython = _str_to_bool(os.environ.get('PROFILE_CYTHON', False))
