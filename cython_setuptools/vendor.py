@@ -11,12 +11,7 @@ import setuptools
 # but the migration to setuptools is not completed
 # this import will change in the future
 from setuptools._distutils.ccompiler import get_default_compiler
-
-PY3 = sys.version_info[0] == 3
-if PY3:
-    import configparser
-else:
-    import ConfigParser as configparser
+import configparser
 
 
 DEFAULTS_SECTION = 'cython-defaults'
