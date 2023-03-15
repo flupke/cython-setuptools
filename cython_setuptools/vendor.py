@@ -164,11 +164,11 @@ def setup(original_setup_file: str, cythonize: bool = True, **kwargs):
 
         if cythonize:
             try:
-                from Cython.Build import cythonize
+                from Cython import Build
             except ImportError:
                 pass
             else:
-                cython_ext_modules = cythonize(cython_ext_modules)
+                cython_ext_modules = Build.cythonize(cython_ext_modules, force=True)
 
         ext_modules = kwargs.setdefault('ext_modules', [])
         ext_modules.extend(cython_ext_modules)
