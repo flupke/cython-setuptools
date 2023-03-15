@@ -1,5 +1,5 @@
 # cython-setuptools
-[![Build Status](https://travis-ci.org/flupke/cython-setuptools.svg?branch=master)](https://travis-ci.org/flupke/cython-setuptools)
+[![CICD-Tests](https://github.com/gopro/cython-setuptools/actions/workflows/tests.yml/badge.svg)](https://github.com/gopro/cython-setuptools/actions/workflows/tests.yml)
 
 Easier distribution and development of Cython modules.
 
