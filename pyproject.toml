@@ -20,6 +20,8 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
+    "tox",
+    "flake8",
     "pytest",
     "virtualenv",
     "pytest-virtualenv",
