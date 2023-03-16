@@ -1,3 +1,2 @@
-__version__ = "0.2.3"
-
-from .vendor import setup  # noqa
+from ._version import __version__
+from .vendor import setup

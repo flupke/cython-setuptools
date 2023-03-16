@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# auto-versioning system
+cython_setuptools/_version.py
