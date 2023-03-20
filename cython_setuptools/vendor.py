@@ -164,7 +164,7 @@ def setup(cythonize=True, **kwargs):
             except ImportError:
                 pass
             else:
-                cython_ext_modules = Build.cythonize(cython_ext_modules)
+                cython_ext_modules = Build.cythonize(cython_ext_modules, force=True)
 
         ext_modules = kwargs.setdefault('ext_modules', [])
         ext_modules.extend(cython_ext_modules)
