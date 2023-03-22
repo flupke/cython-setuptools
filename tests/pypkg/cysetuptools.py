@@ -1,1 +1,0 @@
-../../cython_setuptools/vendor.py
