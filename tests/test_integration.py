@@ -2,7 +2,6 @@ import os
 import os.path as op
 import shutil
 
-import pytest
 import cython_setuptools
 
 
@@ -20,7 +19,6 @@ def _setup_source(setup_name, tmp_dir):
     return setup_path, pypkg_dir
 
 
-@pytest.mark.slow
 def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-no-cythonize.py', tmp_dir)
     virtualenv.run(f"pip install {cython_setuptools_path}")
@@ -28,7 +26,6 @@ def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_dir):
     assert virtualenv.run('python -m bar', capture=True) == '2\n'
 
 
-@pytest.mark.slow
 def test_compile_and_run_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-cythonize.py', tmp_dir)
     virtualenv.run(f"pip install {cython_setuptools_path}")
