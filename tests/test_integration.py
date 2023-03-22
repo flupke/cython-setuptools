@@ -24,7 +24,7 @@ def _setup_source(setup_name, tmp_dir):
 def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-no-cythonize.py', tmp_dir)
     virtualenv.run(f"pip install {cython_setuptools_path}")
-    virtualenv.run('CYTHONIZE=1 pip install -e %s' % pypkg_dir)
+    virtualenv.run(f"export CYTHONIZE=1; pip install -e {pypkg_dir}")
     assert virtualenv.run('python -m bar', capture=True) == '2\n'
 
 
@@ -32,5 +32,5 @@ def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_dir):
 def test_compile_and_run_cythonize_mode(virtualenv, tmp_dir):
     setup_path, pypkg_dir = _setup_source('setup-cythonize.py', tmp_dir)
     virtualenv.run(f"pip install {cython_setuptools_path}")
-    virtualenv.run('pip install -e %s' % pypkg_dir)
+    virtualenv.run(f"pip install -e {pypkg_dir}")
     assert virtualenv.run('python -m bar', capture=True) == '2\n'
