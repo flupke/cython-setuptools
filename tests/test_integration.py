@@ -24,11 +24,11 @@ def test_compile_and_run_no_cythonize_mode(virtualenv, tmp_path):
     virtualenv.run(f"pip install {cython_setuptools_path}")
     virtualenv.env.update({'CYTHONIZE': "1"})
     virtualenv.run(f"pip install -e {pypkg_dir}")
-    assert virtualenv.run('python -m bar', capture=True) == '2\n'
+    assert int(virtualenv.run("python -m bar", capture=True)) == 2
 
 
 def test_compile_and_run_cythonize_mode(virtualenv, tmp_path):
     setup_path, pypkg_dir = _setup_source('setup-cythonize.py', tmp_path)
     virtualenv.run(f"pip install {cython_setuptools_path}")
     virtualenv.run(f"pip install -e {pypkg_dir}")
-    assert virtualenv.run('python -m bar', capture=True) == '2\n'
+    assert int(virtualenv.run("python -m bar", capture=True)) == 2
