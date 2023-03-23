@@ -1,8 +1,9 @@
-import subprocess
+import argparse
+import configparser
 import os
 import os.path as op
 import shlex
-import argparse
+import subprocess
 
 import setuptools
 
@@ -11,8 +12,6 @@ import setuptools
 # but the migration to setuptools is not completed
 # this import will change in the future
 from setuptools._distutils.ccompiler import get_default_compiler
-import configparser
-
 
 DEFAULTS_SECTION = 'cython-defaults'
 MODULE_SECTION_PREFIX = 'cython-module:'
