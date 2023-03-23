@@ -1,3 +1,4 @@
+import os
 import os.path as op
 import shutil
 
@@ -15,7 +16,7 @@ def _setup_source(setup_name, tmp_dir):
     setup_path = pypkg_dir.join('setup.py')
     shutil.copytree(op.join(this_dir, 'pypkg'), str(pypkg_dir))
     shutil.copytree(op.join(this_dir, 'src'), str(src_dir))
-    setup_path.mksymlinkto(pypkg_dir.join(setup_name))
+    os.symlink(pypkg_dir.join(setup_name), setup_path)
     return setup_path, pypkg_dir
 
 
