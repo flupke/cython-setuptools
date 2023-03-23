@@ -13,11 +13,11 @@ import setuptools
 # this import will change in the future
 from setuptools._distutils.ccompiler import get_default_compiler
 
-DEFAULTS_SECTION = 'cython-defaults'
-MODULE_SECTION_PREFIX = 'cython-module:'
-CYTHON_EXT = '.pyx'
-C_EXT = '.c'
-CPP_EXT = '.cpp'
+DEFAULTS_SECTION = "cython-defaults"
+MODULE_SECTION_PREFIX = "cython-module:"
+CYTHON_EXT = ".pyx"
+C_EXT = ".c"
+CPP_EXT = ".cpp"
 
 
 def setup(original_setup_file: str, cythonize: bool = True, **kwargs):
@@ -148,18 +148,16 @@ def setup(original_setup_file: str, cythonize: bool = True, **kwargs):
 
     """
     this_dir = op.dirname(original_setup_file)
-    setup_cfg_file = op.join(this_dir, 'setup.cfg')
-    cythonize = _str_to_bool(os.environ.get('CYTHONIZE', cythonize))
-    profile_cython = _str_to_bool(os.environ.get('PROFILE_CYTHON', False))
-    debug = _str_to_bool(os.environ.get('DEBUG', False))
+    setup_cfg_file = op.join(this_dir, "setup.cfg")
+    cythonize = _str_to_bool(os.environ.get("CYTHONIZE", cythonize))
+    profile_cython = _str_to_bool(os.environ.get("PROFILE_CYTHON", False))
+    debug = _str_to_bool(os.environ.get("DEBUG", False))
     if op.exists(setup_cfg_file):
         # Create Cython Extension objects
         with open(setup_cfg_file) as fp:
             parsed_setup_cfg = parse_setup_cfg(fp, cythonize=cythonize)
         cython_ext_modules = create_cython_ext_modules(
-            parsed_setup_cfg,
-            profile_cython=profile_cython,
-            debug=debug
+            parsed_setup_cfg, profile_cython=profile_cython, debug=debug
         )
 
         if cythonize:
@@ -170,14 +168,13 @@ def setup(original_setup_file: str, cythonize: bool = True, **kwargs):
             else:
                 cython_ext_modules = Build.cythonize(cython_ext_modules, force=True)
 
-        ext_modules = kwargs.setdefault('ext_modules', [])
+        ext_modules = kwargs.setdefault("ext_modules", [])
         ext_modules.extend(cython_ext_modules)
 
     setuptools.setup(**kwargs)
 
 
-def create_cython_ext_modules(cython_modules, profile_cython=False,
-                              debug=False):
+def create_cython_ext_modules(cython_modules, profile_cython=False, debug=False):
     """
     Create :class:`~setuptools.extension.Extension` objects from
     *cython_modules*.
@@ -196,22 +193,22 @@ def create_cython_ext_modules(cython_modules, profile_cython=False,
 
     ret = []
     for name, mod_data in cython_modules.items():
-        kwargs = {'name': name}
+        kwargs = {"name": name}
         kwargs.update(mod_data)
         if profile_cython:
-            cython_directives = kwargs.setdefault('cython_directives', {})
-            cython_directives['profile'] = True
+            cython_directives = kwargs.setdefault("cython_directives", {})
+            cython_directives["profile"] = True
         if debug:
-            for args_name in ('extra_compile_args', 'extra_link_args'):
+            for args_name in ("extra_compile_args", "extra_link_args"):
                 args = kwargs.setdefault(args_name, [])
-                if '-g' not in args:
-                    args.append('-g')
+                if "-g" not in args:
+                    args.append("-g")
         ext = Extension(**kwargs)
         ret.append(ext)
     return ret
 
 
-def parse_setup_cfg(fp, cythonize=False, pkg_config=None, base_dir=''):
+def parse_setup_cfg(fp, cythonize=False, pkg_config=None, base_dir=""):
     """
     Parse the cython specific bits in a setup.cfg file.
 
@@ -232,10 +229,9 @@ def parse_setup_cfg(fp, cythonize=False, pkg_config=None, base_dir=''):
 
 
 class _StoreOrderedArgs(argparse.Action):
-
     def __call__(self, parser, namespace, values, option_string=None):
-        if 'ordered_args' not in namespace:
-            setattr(namespace, 'ordered_args', [])
+        if "ordered_args" not in namespace:
+            setattr(namespace, "ordered_args", [])
         namespace.ordered_args.append((self.dest, values))
 
 
@@ -254,85 +250,85 @@ def extract_args(args_str, args):
     try:
         args_ns, other_args = parser.parse_known_args(args_list)
     except SystemExit:
-        raise Exception('args parsing failed')
+        raise Exception("args parsing failed")
     extracted_args = {}
-    for arg_name, value in getattr(args_ns, 'ordered_args', []):
+    for arg_name, value in getattr(args_ns, "ordered_args", []):
         arg_values = extracted_args.setdefault(arg_name, [])
         arg_values.append(value)
-    return extracted_args, ' '.join(other_args)
+    return extracted_args, " ".join(other_args)
 
 
 def _expand_cython_modules(config, cythonize, pkg_config, base_dir):
     ret = {}
     for section in config.sections():
         if section.startswith(MODULE_SECTION_PREFIX):
-            module_name = section[len(MODULE_SECTION_PREFIX):].strip()
-            module_dict = _expand_one_cython_module(config, section, cythonize,
-                                                    pkg_config, base_dir)
+            module_name = section[len(MODULE_SECTION_PREFIX) :].strip()
+            module_dict = _expand_one_cython_module(
+                config, section, cythonize, pkg_config, base_dir
+            )
             ret[module_name] = module_dict
     return ret
 
 
 def _convert_cpp_std(version):
-    if get_default_compiler() == 'msvc':
-        return f'/std:c++{version}'
-    return f'-std=c++{version}'
+    if get_default_compiler() == "msvc":
+        return f"/std:c++{version}"
+    return f"-std=c++{version}"
 
 
-def _expand_one_cython_module(config, section, cythonize, pkg_config,
-                              base_dir):
-    (pc_include_dirs,
-     pc_extra_compile_args,
-     pc_library_dirs,
-     pc_libraries,
-     pc_extra_link_args) = _expand_pkg_config_pkgs(config, section, pkg_config)
+def _expand_one_cython_module(config, section, cythonize, pkg_config, base_dir):
+    (
+        pc_include_dirs,
+        pc_extra_compile_args,
+        pc_library_dirs,
+        pc_libraries,
+        pc_extra_link_args,
+    ) = _expand_pkg_config_pkgs(config, section, pkg_config)
 
     module = {}
-    module['language'] = _get_config_opt(config, section, 'language', None)
-    module['extra_compile_args'] = \
-        _get_config_list(config, section, 'extra_compile_args') + \
-        pc_extra_compile_args
-    if module['language'] == 'c++':
-        cpp_std = _get_config_opt(config, section, 'cpp_std', None)
+    module["language"] = _get_config_opt(config, section, "language", None)
+    module["extra_compile_args"] = (
+        _get_config_list(config, section, "extra_compile_args") + pc_extra_compile_args
+    )
+    if module["language"] == "c++":
+        cpp_std = _get_config_opt(config, section, "cpp_std", None)
         if cpp_std:
-            module['extra_compile_args'].append(_convert_cpp_std(cpp_std))
-    module['extra_link_args'] = \
-        _get_config_list(config, section, 'extra_link_args') + \
-        pc_extra_link_args
-    module['sources'] = _expand_sources(config, section, module['language'],
-                                        cythonize)
-    include_dirs = _get_config_list(config, section, 'include_dirs')
+            module["extra_compile_args"].append(_convert_cpp_std(cpp_std))
+    module["extra_link_args"] = (
+        _get_config_list(config, section, "extra_link_args") + pc_extra_link_args
+    )
+    module["sources"] = _expand_sources(config, section, module["language"], cythonize)
+    include_dirs = _get_config_list(config, section, "include_dirs")
     include_dirs += pc_include_dirs
     include_dirs = _eval_strings(include_dirs)
     include_dirs = _make_paths_absolute(include_dirs, base_dir)
-    library_dirs = _get_config_list(config, section, 'library_dirs')
+    library_dirs = _get_config_list(config, section, "library_dirs")
     library_dirs += pc_library_dirs
     library_dirs = _eval_strings(library_dirs)
     library_dirs = _make_paths_absolute(library_dirs, base_dir)
-    libraries = _get_config_list(config, section, 'libraries')
-    module['include_dirs'] = include_dirs
-    module['library_dirs'] = library_dirs
-    module['libraries'] = libraries + pc_libraries
+    libraries = _get_config_list(config, section, "libraries")
+    module["include_dirs"] = include_dirs
+    module["library_dirs"] = library_dirs
+    module["libraries"] = libraries + pc_libraries
     all_conf_items = config.items(section)
     try:
         all_conf_items += config.items(DEFAULTS_SECTION)
     except configparser.NoSectionError:
         pass
     for key, value in all_conf_items:
-        if key != 'pkg_config_packages' and key not in module:
+        if key != "pkg_config_packages" and key not in module:
             module[key] = value
     return module
 
 
 def _make_paths_absolute(paths, base_dir):
-    return [op.join(base_dir, p) if not p.startswith('/') else p
-            for p in paths]
+    return [op.join(base_dir, p) if not p.startswith("/") else p for p in paths]
 
 
 def _eval_strings(values):
     ret = []
     for value in values:
-        if value.startswith('eval(') and value.endswith(')'):
+        if value.startswith("eval(") and value.endswith(")"):
             ret.append(eval(value[5:-1]))
         else:
             ret.append(value)
@@ -340,48 +336,45 @@ def _eval_strings(values):
 
 
 def _expand_pkg_config_pkgs(config, section, pkg_config):
-    pkg_names = _get_config_list(config, section, 'pkg_config_packages')
+    pkg_names = _get_config_list(config, section, "pkg_config_packages")
     if not pkg_names:
         return [], [], [], [], []
 
-    original_pkg_config_path = os.environ.get('PKG_CONFIG_PATH', '')
+    original_pkg_config_path = os.environ.get("PKG_CONFIG_PATH", "")
     pkg_config_path = original_pkg_config_path.split(":")
-    pkg_config_path.extend(_get_config_list(config, section,
-                                            'pkg_config_dirs'))
+    pkg_config_path.extend(_get_config_list(config, section, "pkg_config_dirs"))
     env = os.environ.copy()
-    env['PKG_CONFIG_PATH'] = ":".join(pkg_config_path)
+    env["PKG_CONFIG_PATH"] = ":".join(pkg_config_path)
 
-    extra_compile_args = pkg_config(pkg_names, '--cflags', env)
-    extra_link_args = pkg_config(pkg_names, '--libs', env)
+    extra_compile_args = pkg_config(pkg_names, "--cflags", env)
+    extra_link_args = pkg_config(pkg_names, "--libs", env)
 
-    extracted_args, extra_compile_args = extract_args(extra_compile_args,
-                                                      ['-I'])
-    include_dirs = extracted_args.get('I', [])
-    extracted_args, extra_link_args = extract_args(extra_link_args,
-                                                   ['-L', '-l'])
-    library_dirs = extracted_args.get('L', [])
-    libraries = extracted_args.get('l', [])
+    extracted_args, extra_compile_args = extract_args(extra_compile_args, ["-I"])
+    include_dirs = extracted_args.get("I", [])
+    extracted_args, extra_link_args = extract_args(extra_link_args, ["-L", "-l"])
+    library_dirs = extracted_args.get("L", [])
+    libraries = extracted_args.get("l", [])
 
     extra_compile_args = shlex.split(extra_compile_args)
     extra_link_args = shlex.split(extra_link_args)
 
-    return (include_dirs, extra_compile_args, library_dirs, libraries,
-            extra_link_args)
+    return (include_dirs, extra_compile_args, library_dirs, libraries, extra_link_args)
 
 
 def _run_pkg_config(pkg_names, command, env):
-    return subprocess.check_output(['pkg-config', command] + pkg_names,
-                                   env=env).decode('utf8')
+    return subprocess.check_output(["pkg-config", command] + pkg_names, env=env).decode(
+        "utf8"
+    )
 
 
 def _expand_sources(config, section, language, cythonize):
     if cythonize:
         ext = CYTHON_EXT
-    elif language == 'c++':
+    elif language == "c++":
         ext = CPP_EXT
     else:
         ext = C_EXT
-    sources = _get_config_list(config, section, 'sources')
+    sources = _get_config_list(config, section, "sources")
     return [_replace_cython_ext(s, ext) for s in sources]
 
 
@@ -407,20 +400,20 @@ def _get_config_opt(config, section, option, default):
 
 
 def _get_config_list(config, section, option):
-    defaults_value = _get_default(config, option, '')
+    defaults_value = _get_default(config, option, "")
     try:
         value = config.get(section, option)
     except configparser.NoOptionError:
-        value = ''
-    return ('%s %s' % (defaults_value, value)).split()
+        value = ""
+    return ("%s %s" % (defaults_value, value)).split()
 
 
 def _str_to_bool(value):
     if isinstance(value, bool):
         return value
     value = value.lower()
-    if value in ('1', 'on', 'true', 'yes'):
+    if value in ("1", "on", "true", "yes"):
         return True
-    elif value in ('0', 'off', 'false', 'no'):
+    elif value in ("0", "off", "false", "no"):
         return False
-    raise ValueError('invalid boolean string %r' % value)
+    raise ValueError("invalid boolean string %r" % value)
