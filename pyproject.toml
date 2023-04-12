@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 name = "cython_setuptools"
 description = "Cython setuptools integration"
 dynamic = ["version"]
-readme = "README.rst"
+readme = "README.md"
 requires-python = "~=3.7"
 keywords = ["cython", "setuptools"]
 authors = [{name = "Luper Rouch", email= "luper.rouch@gmail.com"}]
