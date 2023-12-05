@@ -13,6 +13,18 @@ if PY3:
 else:
     import ConfigParser as configparser
 
+PY312 = sys.version_info[1] >= 12
+if PY312:
+    def read_config(fp):
+        config = configparser.ConfigParser()
+        config.read_file(fp)
+        return config
+else:
+    def read_config(fp):
+        config = configparser.SafeConfigParser()
+        config.readfp(fp)
+        return config
+
 
 DEFAULTS_SECTION = 'cython-defaults'
 MODULE_SECTION_PREFIX = 'cython-module:'
@@ -218,8 +230,8 @@ def parse_setup_cfg(fp, cythonize=False, pkg_config=None, base_dir=''):
     """
     if pkg_config is None:
         pkg_config = _run_pkg_config
-    config = configparser.SafeConfigParser()
-    config.readfp(fp)
+
+    config = read_config(fp)
     return _expand_cython_modules(config, cythonize, pkg_config, base_dir)
 
 
